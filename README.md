@@ -1,125 +1,194 @@
+
+
 # Secure Banking Application
 
-## Description
-A console-based banking application in Java where users register, log in, open savings or current accounts and deposit or withdraw money.
-It uses a layered object-oriented design and applies secure coding practices like salted PBKDF2 password hashing, strict input validation, output encoding, ownership checks, safe error handling and audit logging.
-All data is saved to text files in the `data/` folder and loaded again when the application starts.
+A Java console application for registering users, opening bank accounts and making deposits and withdrawals. This project demonstrates object-oriented programming and secure coding in a small banking system. It stores users, accounts and transaction history in text files and loads them when the application starts.
 
-## Student Details
+## Student details
+
 - **Name:** Tanatswa Princess Muzani
-- **Registration Number:** H250200A
+- **Registration number:** H250200A
 
-## Features
-- **User authentication:** register and log in; passwords are stored only as salted PBKDF2-HMAC-SHA256 hashes and must meet a strong password policy.
-- **Brute-force protection:** 3 wrong passwords lock a username for 2 minutes.
-- **Account management:** create Savings or Current accounts (up to 5 per user) with a random 10-digit account number; view all your accounts and the balance of any account you own.
-- **Transactions:** deposit and withdraw. Invalid amounts are rejected. Savings accounts cannot be overdrawn; Current accounts can go down to -$500.00.
-- **Transaction history:** every deposit and withdrawal per account, newest first.
-- **Data persistence:** users, accounts and transactions are saved to `users.txt`, `accounts.txt` and `transactions.txt`, and loaded on start-up.
-- **Audit log:** logins, failures, lockouts, transactions and denied access are recorded in `data/audit.log` (no passwords, masked account numbers).
-- **Automated tests:** 55 tests covering the model, validation, hashing, login, banking rules, persistence and logging.
+## What the application does
 
----
+After registering and logging in, a user can:
 
-## Sample Data (evidence of testing)
-The `data/` folder already contains files produced by running the application: one test user, two accounts and five transactions.
+- Open a savings or current account, with a maximum of five accounts per user.
+- View their accounts and balances.
+- Deposit or withdraw money.
+- View an account's transaction history, starting with the most recent transaction.
 
-| Test user | Password |
-|---|---|
-| `tanatswa_test` | `Test@Bank2026!` |
-| `Monet` | `M4RRYM3M4RRY3#` |
+Each account gets a random 10-digit account number. Savings accounts cannot go below a zero balance. Current accounts have a $500 overdraft limit, so their balance can go down to -$500.00.
 
-These are throwaway password used only for testing. You can log in as this user, or choose **Register** to create your own user and accounts; new records are added to the same files and reloaded on the next start.
+Users can only access their own accounts. The application also records security events, such as failed logins and attempts to access another user's account.
 
-## How to Run using Intellij IDEA
+## Running the project
 
-**IntelliJ IDEA**
-1. **File > Open** and select the `SecureBankApp-H250200A` folder. If asked, choose a JDK 11 or newer.
-2. Select the **Run Banking App** configuration and press Run.
-3. Select **All Tests** and press Run to run the tests.
+You need **JDK 11 or newer**.
 
-**Terminal** (from the project folder; JDK 11+). A real terminal hides typed passwords; the IntelliJ Run window cannot, so it shows a notice.
-```
-mkdir out
-javac -d out $(find src test -name "*.java")      # Windows PowerShell: see note below
+### IntelliJ IDEA
+
+1. Open the `SecureBankApp-H250200A` folder using **File > Open**.
+2. Select JDK 11 or newer if prompted.
+3. Select the **Run Banking App** configuration and click Run.
+4. To run the tests, select **All Tests** and click Run.
+
+### Terminal
+
+Run these commands from the project folder.
+
+**Linux or macOS:**
+
+```bash
+mkdir -p out
+javac -d out $(find src test -name '*.java')
 java -cp out securebank.Main
+```
+
+**Windows PowerShell:**
+
+```powershell
+New-Item -ItemType Directory -Force out | Out-Null
+javac -d out (Get-ChildItem -Path src,test -Recurse -Filter *.java).FullName
+java -cp out securebank.Main
+```
+
+To run the tests after compiling:
+
+```text
 java -cp out securebank.test.TestRunner
 ```
-Windows PowerShell: `javac -d out (Get-ChildItem -Recurse -Filter *.java src,test).FullName`
 
-The start-up banner prints the full path of the data folder in use. By default it is `data/` in the folder you run from (IntelliJ is configured to use the project folder). To use another folder: `java -Dsecurebank.data.dir=C:\bank-data -cp out securebank.Main`.
+Passwords are hidden when the application runs in a terminal that supports password input. The IntelliJ Run window cannot hide them, so the application displays a notice.
 
----
+By default, files are saved in `data/` under the current working directory. The application prints the full data-folder path at startup. The IntelliJ run configuration uses the project folder.
 
-## Where Each Requirement Is Implemented
+To choose another folder, pass the `securebank.data.dir` property:
 
-| Requirement | Implemented in |
-|---|---|
-| **1. User authentication** | `AuthenticationService` (`register`, `login`), `PasswordHasher`, `LoginAttemptTracker`, menus in `BankingApplication` |
-| **2. Account management** (create account, view balance) | `BankingService.createAccount / getAccounts / getOwnedAccount`; models `Account`, `SavingsAccount`, `CurrentAccount` |
-| **3. Transactions** (deposit, withdraw) | `BankingService.deposit / withdraw / getTransactionHistory`; rules in `Account.credit / debit`; record in `Transaction` |
-| **4. Data persistence** (text files, loaded on start) | `FileUserRepository`, `FileAccountRepository`, `FileTransactionRepository` load their file in the constructor; `Main` creates them at start-up; `FileStorageUtil` writes safely |
-
-## Secure Coding Practices
-
-| Practice | How it is done | Where |
-|---|---|---|
-| **Input validation** | Allow-lists with anchored regular expressions: username `[A-Za-z0-9_]{3,20}`, amounts as plain decimals (max 2 places), account numbers exactly 10 digits. Input lines are capped at 256 characters. The service validates amounts again. | `InputValidator`, `ConsoleUtil`, `BankingService` |
-| **Output encoding** | Everything printed is encoded: control characters (such as terminal escape codes) and hidden direction-override characters become `?`. Log text is limited to safe characters. | `ConsoleUtil.encode`, `AuditLogger.clean` |
-| **Injection defence** | There is no SQL, so there is no `PreparedStatement` to use. The equivalent risk in a text file is a `\|` or line break inside a value creating fake fields or records. `RecordCodec` plays the role of a parameterised query: values are escaped, never concatenated into a line. File names never come from user input. | `RecordCodec`, `File*Repository` |
-| **Strong authentication and hashing** | PBKDF2-HMAC-SHA256, 600,000 iterations, a random 16-byte salt per password, constant-time comparison. Password policy: 10-128 characters with upper, lower, digit and symbol, no username inside. One generic login error, equal hashing work for unknown users, lockout after 3 failures. Passwords are `char[]` and wiped after use. | `PasswordHasher`, `InputValidator`, `LoginAttemptTracker`, `AuthenticationService` |
-| **Least privilege** | Every banking method works only on the logged-in user's accounts. Another user's account gives the same "not found" answer as a missing one, and the attempt is logged. Repositories return copies, and the transaction ledger is append-only. | `BankingService`, `AccountRepository`, `TransactionRepository` |
-| **Safe error handling** | Expected problems show a clear message; anything unexpected shows a generic message and only the exception type is logged (no stack traces on screen). If a transaction cannot be saved, the balance is rolled back. Damaged data lines are skipped without printing them. | `BankingApplication.reportFailure`, `BankingService.commit`, `File*Repository` |
-| **Defensive logging** | Timestamped log of security events; never contains passwords, hashes or full account numbers (`******5643`); log lines cannot be forged; a logging failure never stops the app. | `AuditLogger` |
-| **Safe file writing** | Files are replaced atomically (temp file, then rename); changes are written to disk before memory is updated. | `FileStorageUtil`, `File*Repository` |
-
-## OOP Principles
-
-| Principle | Where |
-|---|---|
-| **Inheritance** | `SavingsAccount` and `CurrentAccount` extend the abstract `Account` |
-| **Polymorphism** | Code uses `Account` and calls `getType()` / `getOverdraftLimit()` without knowing the subclass |
-| **Abstraction** | `Account` is abstract; `UserRepository`, `AccountRepository`, `TransactionRepository` hide how data is stored |
-| **Encapsulation** | `Account` keeps its balance private and changes it only through `credit()` / `debit()`; `User` never exposes a password |
-| **Immutability** | `Transaction` and `User` fields are final |
-| **Factory** | `AccountType.newAccount(...)` builds the right account subclass |
-| **Dependency injection** | `Main` creates the objects and passes them through constructors (including a `Clock`), so tests can swap them |
-| **Single responsibility** | One job per package: `model`, `repository`, `service`, `security`, `util`, `app` |
-
-## Project Structure
+```text
+java -Dsecurebank.data.dir=C:\bank-data -cp out securebank.Main
 ```
+
+## Test accounts
+
+The sample data includes the following users:
+
+| Username | Test password |
+| --- | --- |
+| `tanatswa_test` | `Test@Bank2026!` |
+| `Monet` | `M4RRYM3M4RRYM3#` |
+
+These credentials are for demonstration only. You can also select **Register** to create a new user. New users, accounts and transactions are saved in the same data folder and loaded on the next run.
+
+To start with an empty system, close the application and clear or delete `users.txt`, `accounts.txt`, `transactions.txt` and `audit.log`. This removes the saved users, accounts, transaction history and logs.
+
+## Project structure
+
+```text
 SecureBankApp-H250200A/
 ├── src/securebank/
-│   ├── Main.java                 # start-up: load data files, connect classes, run
-│   ├── app/BankingApplication    # console menus
-│   ├── model/                    # Account (abstract), SavingsAccount, CurrentAccount, AccountType,
-│   │                             # User, Transaction, TransactionType
-│   ├── service/                  # AuthenticationService, BankingService
-│   ├── security/                 # PasswordHasher, LoginAttemptTracker
-│   ├── repository/               # 3 interfaces, 3 File* classes, RecordCodec
-│   ├── util/                     # InputValidator, ConsoleUtil, FileStorageUtil, AuditLogger
-│   └── exception/                # custom exceptions
-├── test/securebank/test/         # TestRunner + 8 test suites (no external libraries)
-├── data/                         # users.txt, accounts.txt, transactions.txt, audit.log
+│   ├── Main.java
+│   ├── app/
+│   ├── model/
+│   ├── service/
+│   ├── security/
+│   ├── repository/
+│   ├── util/
+│   └── exception/
+├── test/securebank/test/
+├── data/
 ├── README.md
 └── .gitignore
 ```
 
-## Data File Formats
-One record per line, fields separated by `|` (escaped by `RecordCodec`).
+`Main` loads the stored data, creates the application objects and starts the console menu. `BankingApplication` handles user interaction. `AuthenticationService` handles registration and login, while `BankingService` handles account operations and transactions.
 
-| File | Format |
-|---|---|
-| `users.txt` | `username\|passwordHash\|createdAt` (hash = `PBKDF2WithHmacSHA256$iterations$salt$hash`) |
-| `accounts.txt` | `accountNumber\|type\|owner\|balance\|createdAt` |
-| `transactions.txt` | `id\|accountNumber\|type\|amount\|timestamp\|balanceAfter` |
-| `audit.log` | `timestamp\|EVENT\|username\|detail` (UTC) |
+The model classes represent users, accounts and transactions. Repository interfaces separate the banking logic from file storage, and their file-based implementations read and write the text files. Validation, console output, file-writing helpers and audit logging are kept in the utility package.
+
+## Design decisions
+
+Text files meet the assignment's storage requirement. Keeping file operations in `FileUserRepository`, `FileAccountRepository` and `FileTransactionRepository` means the services can work with users and accounts without handling file paths or record parsing themselves.
+
+Savings and current accounts share their basic behaviour through `Account`. Their overdraft rules differ: a savings account with $100 should reject a $120 withdrawal, while a current account with $100 can allow it and finish with a balance of -$20, within its $500 overdraft limit.
+
+Validation happens at both the console and service levels. The console can give early feedback about an invalid amount, while the service still checks it when called directly by a test or another part of the application.
+
+Passing a `Clock` into the login-related code lets the tests check the two-minute lockout without waiting two real minutes.
+
+## Object-oriented design
+
+The account model is where the main OOP principles are demonstrated:
+
+| Principle | Example in the project |
+| --- | --- |
+| Encapsulation | `Account` keeps its balance private. Changes go through `credit()` and `debit()` so account rules can be checked. |
+| Inheritance | `SavingsAccount` and `CurrentAccount` extend the abstract `Account` class. |
+| Polymorphism | The service works with `Account` objects and calls methods such as `getOverdraftLimit()` without needing to know the specific account class. |
+| Abstraction | The abstract `Account` class defines shared account behaviour. Repository interfaces hide the details of file storage. |
+
+`User` and `Transaction` use final fields. `AccountType.newAccount(...)` creates the appropriate account subclass. Dependencies are passed through constructors, including a `Clock`, so tests can use controlled time and substitute storage implementations.
+
+## Security choices
+
+### Passwords and login
+
+Passwords are stored as salted **PBKDF2-HMAC-SHA256 hashes**, using 600,000 iterations and a random 16-byte salt for each password. Hash comparison uses a constant-time comparison. Passwords are handled as character arrays and cleared after use.
+
+A password must be 10–128 characters long and include an uppercase letter, a lowercase letter, a digit and a symbol. It must not contain the username.
+
+Login failures use a generic message so the response does not reveal whether a username exists. Unknown usernames still trigger password-hashing work. Three failed attempts lock the username for two minutes.
+
+### Input and output
+
+Usernames accept only letters, digits and underscores, with a length of 3–20 characters. Account numbers must contain exactly 10 digits. Amounts must be plain decimal values with no more than two decimal places. Inputs such as `-5`, `1e5` and `1.234` are rejected.
+
+Console input is limited to 256 characters, and the banking service checks amounts again before processing a transaction. Console output replaces control characters and direction-override characters with `?` to prevent them from affecting the terminal display.
+
+### Access control
+
+Banking operations check account ownership against the logged-in user. An account belonging to another user produces the same response as an account that does not exist. Denied access is recorded in the audit log.
+
+Repositories return copies of records, and the transaction ledger is append-only.
+
+### Protecting text-file records
+
+This application does not use a database, so parameterised SQL queries do not apply. For text storage, `RecordCodec` escapes field separators and line breaks so values cannot create extra fields or records. File names are fixed rather than supplied by the user.
+
+### Errors, logging and file writes
+
+Expected errors show a message the user can act on. Unexpected errors show a generic message, while the audit log records the exception type without printing a stack trace on screen.
+
+The audit log records login attempts, lockouts, transactions and denied access. It excludes passwords and password hashes, masks account numbers and cleans log text to reduce the risk of forged log entries. A logging failure does not stop the application.
+
+Storage writes use a temporary file followed by replacement of the target file. Records are written before the corresponding in-memory data is updated. The banking service includes rollback handling when a transaction cannot be saved. Damaged data lines are skipped without displaying their contents.
+
+## Stored data
+
+Each text file contains one record per line. Fields are separated by `|`, with escaping handled by `RecordCodec`.
+
+| File | Fields |
+| --- | --- |
+| `users.txt` | Username, password hash, creation time |
+| `accounts.txt` | Account number, account type, owner, balance, creation time |
+| `transactions.txt` | Transaction ID, account number, transaction type, amount, timestamp, balance after the transaction |
+| `audit.log` | Timestamp, event, username, detail |
+
+Password hashes use the format `PBKDF2WithHmacSHA256$iterations$salt$hash`. Audit timestamps use UTC.
 
 ## Testing
-Run **All Tests** or `java -cp out securebank.test.TestRunner`. All **55 tests pass**. They check, among other things: money rules and overdraft limits, rejected inputs (`-5`, `1e5`, `1.234`, bad account numbers, weak passwords), hashing and salts, escaping of `|` and line breaks, generic login errors, lockout and unlock, other users' accounts being refused, rollback when a write fails, reload after a restart, damaged data lines, output encoding and log forging.
 
-## LIMITATIONS
-- Single-user console program; do not run two copies on the same `data/` folder at once.
-- Lockout state is kept in memory, so restarting clears it.
-- Data files are not encrypted; the committed test data contains only a throwaway user.
-- Educational project: not for real money or real credentials.
+The project includes 55 tests across eight test suites and uses a custom `TestRunner` without external test libraries.
+
+The tests cover account rules, overdraft limits, input validation, password hashing, login failures, lockouts and account ownership. They also cover record escaping, reloading saved data, damaged records, rollback after a write failure, console output handling and log-forging attempts.
+
+Run **All Tests** in IntelliJ or use the terminal command above to check the results in your environment.
+
+
+I separated file storage from the banking logic so that `BankingService` focuses on account rules, such as checking balances and withdrawal limits. The repository classes handle reading and writing the text files. This makes the code easier to test and maintain, because changes to the file format do not need to change the banking rules.
+
+## Limitations
+
+- Only one application instance should use a data folder at a time.
+- Login lockouts are held in memory and are cleared when the application restarts.
+- Data files are not encrypted.
+- This is an educational project and should only be used with test data.
