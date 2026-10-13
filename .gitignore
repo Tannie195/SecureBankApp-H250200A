@@ -1,0 +1,12 @@
+# Compiled output
+*.class
+out/
+
+# Data files (users.txt, accounts.txt, transactions.txt, audit.log) ARE committed as evidence of testing.
+# Only temporary files are ignored:
+data/*.tmp
+
+# IDE / OS
+.vscode/
+.DS_Store
+Thumbs.db

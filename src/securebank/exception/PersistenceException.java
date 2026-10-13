@@ -1,0 +1,17 @@
+package securebank.exception;
+
+/**
+ * Unchecked exception thrown when reading or writing a data file fails
+ * (ie the folder cannot be created or the disk is full)*/
+public class PersistenceException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+
+    public PersistenceException(String message) {
+        super(message);
+    }
+
+    public PersistenceException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}

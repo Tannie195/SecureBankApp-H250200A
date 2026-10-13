@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Banking App" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="securebank.Main" />
+    <module name="SecureBankApp-H250200A" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -1,0 +1,26 @@
+2026-10-13T19:11:48Z|STARTUP|system|Application started
+2026-10-13T19:11:48Z|REGISTER|tanatswa_test|New user registered
+2026-10-13T19:11:49Z|LOGIN_FAILED|tanatswa_test|Invalid credentials
+2026-10-13T19:11:49Z|LOGIN_OK|tanatswa_test|Login successful
+2026-10-13T19:11:49Z|ACCOUNT_CREATED|tanatswa_test|SAVINGS ******5643
+2026-10-13T19:11:49Z|ACCOUNT_CREATED|tanatswa_test|CURRENT ******8166
+2026-10-13T19:11:49Z|LOGOUT|tanatswa_test|User logged out
+2026-10-13T19:11:49Z|SHUTDOWN|system|Application stopped
+2026-10-13T19:11:50Z|STARTUP|system|Application started
+2026-10-13T19:11:50Z|LOGIN_OK|tanatswa_test|Login successful
+2026-10-13T19:11:50Z|DEPOSIT|tanatswa_test|1500.00 on ******5643
+2026-10-13T19:11:50Z|DEPOSIT|tanatswa_test|250.75 on ******5643
+2026-10-13T19:11:50Z|WITHDRAWAL|tanatswa_test|320.50 on ******5643
+2026-10-13T19:11:50Z|WITHDRAWAL_DENIED|tanatswa_test|Insufficient funds ******5643
+2026-10-13T19:11:50Z|DEPOSIT|tanatswa_test|400.00 on ******8166
+2026-10-13T19:11:50Z|WITHDRAWAL|tanatswa_test|650.00 on ******8166
+2026-10-13T19:11:50Z|LOGOUT|tanatswa_test|User logged out
+2026-10-13T19:11:50Z|SHUTDOWN|system|Application stopped
+2026-10-13T19:20:08Z|STARTUP|system|Application started
+2026-10-13T19:22:52Z|REGISTER|Monet|New user registered
+2026-10-13T19:23:01Z|LOGIN_OK|Monet|Login successful
+2026-10-13T19:23:07Z|ACCOUNT_CREATED|Monet|SAVINGS ******3700
+2026-10-13T19:23:35Z|DEPOSIT|Monet|56000.00 on ******3700
+2026-10-13T19:23:56Z|WITHDRAWAL|Monet|4500.00 on ******3700
+2026-10-13T19:24:34Z|LOGOUT|Monet|User logged out
+2026-10-13T19:24:36Z|SHUTDOWN|system|Application stopped
